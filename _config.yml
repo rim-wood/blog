@@ -6,14 +6,14 @@
 title: 冰梨
 subtitle:
 description:
-author: willmin
+author: rim-wood
 language: zh-CN
 timezone:
 favicon: /favicon.ico
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://icepear.cn
+url: http://www.icepear.cn
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -70,5 +70,5 @@ theme: icarus
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repository: git@github.com:will-min/will-min.github.io.git
+  repository: git@github.com:rim-wood/rim-wood.github.io.git
   branch: master

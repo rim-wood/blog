@@ -17,16 +17,16 @@ customize:
         enabled: true # Whether to show profile bar
         avatar: css/images/avatar.png
         gravatar: # Gravatar email address, if you enable Gravatar, your avatar config will be overriden
-        author: will-min
-        author_title: 有点逗比的web工程师，java，node，前后端，docker都玩玩
+        author: rim·wood
+        author_title: java,node,go,docker,k8s,kafka,elk,springCloud,算法,设计模式
         location: shenzhen, China
-        follow: https://github.com/will-min
+        follow: https://github.com/rim-wood
     highlight: monokai
     sidebar: right # sidebar position, options: left, right
     thumbnail: true # enable posts thumbnail, options: true, false
     favicon: # path to favicon
     social_links:
-        github: https://github.com/will-min
+        github: https://github.com/rim-wood
         #twitter: /
         #facebook: /
         #dribbble: /
@@ -51,8 +51,16 @@ search:
 # Comment
 comment:
     disqus:  # enter disqus shortname here
-    duoshuo: willmin # enter duoshuo shortname here
+    duoshuo: # enter duoshuo shortname here
     youyan: # enter youyan uid here
+    gitalk:
+        clientID: 67a70dbaf4b73afeca4d
+        clientSecret: 3680bfe53fd43fc415fc980b6c91b17004c3c22b
+        repo: rim-wood.github.io
+        owner: rim-wood
+        admin:
+          - rim-wood
+        distractionFreeMode: true
 
 # Share
 #share: jiathis # options: jiathis, bdshare, addtoany, default
