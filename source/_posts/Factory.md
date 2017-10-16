@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/designpattern/factory/Factory.png
 title: 工厂模式（Factory Method）
 date: 2017-3-11 16:30:00
 toc: true
@@ -15,7 +16,7 @@ categories:
 **简单工厂模式主要的意图就是抽象化实体类，让子类去决定实例化。**
 在小米加步枪时代，你需要一辆马车，你需要自己去创造。而在飞机大炮时代，你需要一辆汽车，你就会找工厂造一台，如果需求再变通一点，甲需要宝马，乙需要奥迪。所以造车的工厂就要能造两种车，而简单工厂模式就符合这种需求。这个优点就是调用者创建对象只需通过工厂创建，扩展性高
 ### UML图
-![](http://icepear.oss-cn-shenzhen.aliyuncs.com/EasyFactory.png)
+![](http://icepear.oss-cn-shenzhen.aliyuncs.com/designpattern/factory/EasyFactory.png)
 ### 示例代码
 Car接口基类
 ```java
@@ -70,7 +71,7 @@ public class Test{
 ### 解释
 工厂模式显然是对简单工厂模式的一种改进或者说是完善，遵循开闭原则。**一个抽象工厂类派生出多个具体工厂类，具体工厂类只能生产对应的具体产品**在现实需求中，宝马工厂和奥迪工厂肯定是不同的工厂，所以对工厂也进行抽象,这样就方便扩展了，当又来一种汽车时，只需要另外开辟一个工厂，而不要对原来工厂进行修改。
 ### UML
-![](http://icepear.oss-cn-shenzhen.aliyuncs.com/Factory.png)
+![](http://icepear.oss-cn-shenzhen.aliyuncs.com/designpattern/factory/Factory.png)
 ### 示例代码
 Car接口基类
 ```java
@@ -135,7 +136,7 @@ public class Test{
 ### 解释
 抽象工厂模式跟工厂模式最大的区别可能就是把产品再进行抽象，也就是**一个抽象工厂类派生出多个具体工厂类，而具体工厂类可以生产出多个具体产品**因为在现实生活中，很多产品都是一系列的，一个**产品族**。还按照上面的汽车的案例分析，现实生活中，你需要一台宝马，不可能说就是一种类型宝马，那宝马公司就去玩蛋蛋了，用户可能根据排量、汽车空间、稳定性、安全性各方面进行选择。所以宝马公司必须推出各个型号的子产品，例如3系和5系两款车，3系里面又包含1.5L排量的和2.0L排量的，5系同理。在实现这个需求上，我们就要对产品进行抽象，然后具体工厂写出对应的生产策略。
 ### UML
-![](http://icepear.oss-cn-shenzhen.aliyuncs.com/AbstractFactory.png)
+![](http://icepear.oss-cn-shenzhen.aliyuncs.com/designpattern/factory/AbstractFactory.png)
 ### 示例代码
 3系BMW抽象类
 ```java

@@ -1,11 +1,12 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/effectivejava/1/java.jpg
 title: 《Effective Java》阅读记录
 date: 2017-3-10 15:30:02
 toc: true
 tags: 
-- 设计模式
+- Effective Java
 categories:
-- 设计模式
+- Effective Java
 ---
-设计模式是前人通过不断实践总结出来的经验。在日常编码也时有用到，更多的体现是在各大框架设计里面。自己在大学中也有系统学习过，但没有通过自己总结出来，在3月份，我将系统的总结设计模式，基本上每日会更新一到两篇。以加深自己对设计模式的理解
+
 <!--more-->
