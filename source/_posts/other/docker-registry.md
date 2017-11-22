@@ -1,7 +1,7 @@
 ---
 banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/docker/registry/registry.png
 title: docker 私服库(V2)
-date: 2017-4-11 18:30:02
+date: 2017-4-9 18:30:02
 toc: true
 tags: 
 - docker
