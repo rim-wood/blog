@@ -69,3 +69,32 @@ categories:
 可以用Thread.setDaemon(true) 创建
 
 ### ThreadLocal是什么
+ThreadLocal用于创建线程的局部变量，对象的所有线程共享它的变量，所以这个变量不是线程安全的，可以使用线程同步来达到线程的目的，但是如果想避免同步，就可以使用ThreadLocal变量，每个线程都有自己的ThreadLocal变量互不影响，可以使用get/set方法来设置和获取值
+
+### 什么是死锁，怎么分析和避免死锁
+死锁是指两个或以上的线程永远处于阻塞状态。
+分析死锁，可以通过查看应用程序的java Thread dump，可以通过jstack工具查看状态为阻塞的线程，然后查看它正在等待的锁定的资源，每个资源都有一个唯一的ID，我们可以使用它找到哪个线程已经在对象上持有锁
+有以下准则可以避免死锁
+1. 避免嵌套锁定，这是大部分死锁的情况，也就是说尽量不要在锁定资源a的情况下，又去锁定资源b
+2. 只锁定需要锁定的东西，你应该只获取必须处理的资源的锁，如果我们只对某一个字段感兴趣，那么我们应该只锁定该特定字段而不是完整对象
+3. 避免无限等待，如果线程a必须等待线程b完成，尽量不要用sleep去控制，而是使用threa.join串行执行
+
+### 什么是线程池，如何创建线程池
+根据系统自身的环境情况，有效的限制执行线程的数量，使得运行效果达到最佳。线程主要是通过控制执行的线程的数量，超出数量的线程排队等候，等待有任务执行完毕，再从队列最前面取出任务执行。
+创建线程池的方式有多种
+1. java.util.concurrent.Executors 提供了线程池的静态实现方法,但一般不推荐这种写法
+- newFixedThreadPool();创建的线程池corePoolSize和maximumPoolSize值是相等的，它使用的LinkedBlockingQueue；
+- newSingleThreadExecutor();将corePoolSize和maximumPoolSize都设置为1，也使用的LinkedBlockingQueue；
+- newCachedThreadPool();将corePoolSize设置为0，将maximumPoolSize设置为Integer.MAX_VALUE，使用的SynchronousQueue，也就是说来了任务就创建线程运行，当线程空闲超过60秒，就销毁线程。
+- newScheduledThreadPool(); 用于创建一个线程池，线程池中得线程能够周期性地执行给定的任务
+2. ThreadPoolExecutor类提供了更完善的线程池创建构造方法
+3. ScheduledExecutorService 类提供了定期执行任务线程池
+
+## 并发
+### 什么是原子操作，java并发api中的原子类是什么
+原子操作在一个任务单元中执行，不受其他操作的干扰。原子操作在多线程环境中是必需的，以避免数据不一致。
+比如int++ 就不是一个原子操作，因为再多线程的情况下，某个线程执行了加1，但其他线程可能读的还是旧的值，就会导致错误的结果。
+为了解决这个问题，我们必须保证count的增量操作是院子的，我们可以使用同步来达到目的，但java1.5以后在java.util.concurrent.atomic提供了int和long的包装类，可以用来实现这个原子操作，没有使用同步，有兴趣的可以深入了解实现
+
+###
+
