@@ -96,5 +96,49 @@ ThreadLocal用于创建线程的局部变量，对象的所有线程共享它的
 比如int++ 就不是一个原子操作，因为再多线程的情况下，某个线程执行了加1，但其他线程可能读的还是旧的值，就会导致错误的结果。
 为了解决这个问题，我们必须保证count的增量操作是院子的，我们可以使用同步来达到目的，但java1.5以后在java.util.concurrent.atomic提供了int和long的包装类，可以用来实现这个原子操作，没有使用同步，有兴趣的可以深入了解实现
 
-###
+### java并发api中的Lock接口是什么？与synchronize相比，它有什么好处？
+Lock 借口提供了更多广泛的锁定操作比使用synchronized，Lock结构更加灵活，可以有完全不同的属性，并且可以关联多个条件对象
+Lock有以下优点
+1. 可以让线程更公平
+2. 可以使线程在等待一个锁定对象时响应中断
+3. 可以去尝试获取锁定，但如果无法获取锁定时，则会立即返回或在超时后返回
+4. 可以以不同的顺序获取或释放不同范围内的lock
+
+### 谈谈Excutor
+Excutor 是在jdk 1.5 引入的，通过java.util.concurrent.Executor接口
+Excutor 主要是根据一组执行策略规范调用，调度，执行和控制异步任务
+创建多个线程并且没有达到最大阈值的限制会导致应用程序耗尽堆内存，所以创建线程池是一个比较好的解决方案，应为有限的线程可以被集中和重用，而Excutor就是为了更好的创建线程池设计的
+
+### 什么是BlockingQueue，怎么通过BlockingQueue实现一个生产者消费者模型
+java.util.concurrent.BlockingQueue 是一个阻塞队列，阻塞必然有两种情况，
+1. 当队列满了的时候，进行入列操作会被阻塞
+2. 当队列空的时候，出列操作会被阻塞
+阻塞队列是线程安全的，所有排队方法本质上都是原子性的，使用内部锁或其他形式的并发控制
+阻塞队列主要也是用于生产者消费者问题，负责生产的线程不断的制造新对象并插入到阻塞队列中，直到达到这个队列的上限值。队列达到上限值之后生产线程将会被阻塞，直到消费的线程对这个队列进行消费。同理，负责消费的线程不断的从队列中消费对象，直到这个队列为空，当队列为空时，消费线程将会被阻塞，除非队列中有新的对象被插入。
+
+### 谈谈Callable和Future
+Callable相当于Runnable的一个扩展，不同于Runnable的是Callable是个泛型参数化接口，并能返回线程的执行结果，而且能在无法正常计算时抛出异常。
+Callable并不像Runnable那样通过Thread的start方法就能启动实现类的run方法，通常是利用ExecutorService的submit方法去启动call方法自执行任务，而ExecutorService的submit又可以返回一个Future类型的结果，因此Callable通常也与Future一起使用，还有一种方式是使用FutureTask封装Callable再由Thread去启动。
+所以Callable的好处是异步执行，还能返回结果，结合Future还能判断任务状态，取消任务
+
+### 谈谈FutureTask
+FutureTask是Future接口基类的实现类，可以和Executors一起用于异步处理，大多数情况下很少使用FutureTask类，但如果我们想要覆盖Future类的某些方法，并且保留基本实现，它就变得非常方便。我们可以扩展这个类，根据需求覆盖一些方法
+
+### 谈谈Concurrent Collection类
+通常Collection类是快速失败的，这意味着当一个线程在使用iterator便利时，去修改集合，这个iterator.next()操作将抛出ConcurrentModificationException异常。而Concurrent Collection则不会出现这个问题，因为它就是为多线程设计的
+主要的类包括 ConcurrentHashMap, CopyOnWriteArrayList 和 CopyOnWriteArraySet
+
+### 讲讲Executors类
+Executors 提供了很多静态使用方法，包括Executor, ExecutorService, ScheduledExecutorService, ThreadFactory, 以及 Callable，所以可以使用executors类在java中轻松创建线程池，这也是唯一支持可调用实现执行的类。
+
+### java8中并发改进了哪些？
+重要的改进包括：
+1. ConcurrentHashMap 的compute(), forEach(), forEachEntry(), forEachKey(), forEachValue(), merge(), reduce() 和 search() 等方法
+2. 加入了CompletableFuture ，使异步编程更优美
+3. Executors 新增了 newWorkStealingPool 线程池方法
+
+
+
+
+
 
