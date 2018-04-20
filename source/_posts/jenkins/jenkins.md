@@ -102,7 +102,7 @@ java -jar jenkins.war
 以docker方式运行，主要是快速方便。搭建docker形式需要注意几点
 1. 需要自己编写dockerfile，安装所需的一些工具
 2. 如果利用jenkins构建docker镜像，就要考虑是使用dockerIndocker还是dockerOutdocker
-3. 如果项目使用docker，可以考虑镜像私服，搭建方法可以![参考](http://www.icepear.cn/2017/04/11/other/docker-registry/)
+3. 如果项目使用docker，可以考虑镜像私服，搭建方法可以[参考](http://www.icepear.cn/2017/04/11/other/docker-registry/)
 下面详细针对这几点说明。
 - 编写dockerfile是必要的，为什么这么说呢，因为避免不了要使用docker，jenkins使用docker有两种方式，一种是在dockerfile中再安装一个docker就是
 所谓的dockerIndocker，但是很多都不太推荐这种用法，大部分还是选择将宿主机的docker挂载至jenkins容器内运行。那既然能挂载那为什么还要写dockerfile
@@ -112,7 +112,7 @@ java -jar jenkins.war
 docker: error while loading shared libraries: libltdl.so.7: cannot open shared object file: No such file or directory
 ```
 后面找了一下，其实就是少包
-![参考链接](https://stackoverflow.com/questions/45121945/jenkins-in-docker-container-run-docker-pipeline)
+[参考链接](https://stackoverflow.com/questions/45121945/jenkins-in-docker-container-run-docker-pipeline)
 所以最终还是编写dockerfile，然后安装缺少的包
 假如宿主机docker 的权限是root，直接挂进jenkins容器还是会存在权限问题
 运行docker权限错误
@@ -120,7 +120,7 @@ docker: error while loading shared libraries: libltdl.so.7: cannot open shared o
 Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock:
 Get http://%2Fvar%2Frun%2Fdocker.sock/v1.27/containers/json: dial unix /var/run/docker.sock: connect: permission denied
 ```
-![参考链接](https://stackoverflow.com/questions/42164653/docker-in-docker-permissions-error)
+[参考链接](https://stackoverflow.com/questions/42164653/docker-in-docker-permissions-error)
 办法就是看宿主机docker用户的GID是多少，然后镜像中对应添加一致的，就可以愉快的在jenkins容器中使用docker了，我的dockerfile如下：
 ```Dockerfile
 FROM jenkins:latest
