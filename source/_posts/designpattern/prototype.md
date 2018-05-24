@@ -12,7 +12,7 @@ categories:
 <!--more-->
 
 # 源代码地址
-![源码连接](https://github.com/rim-wood/design-patterns/tree/master/prototype)
+[源码连接](https://github.com/rim-wood/design-patterns/tree/master/prototype)
 
 # UML
 类图就不画了，就是通过clone出一个新对象

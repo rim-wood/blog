@@ -12,7 +12,7 @@ categories:
 <!--more-->
 
 # 源代码地址
-![源码连接](https://github.com/rim-wood/design-patterns/tree/master/builder)
+[源码连接](https://github.com/rim-wood/design-patterns/tree/master/builder)
 
 # UML
 类图如下：
