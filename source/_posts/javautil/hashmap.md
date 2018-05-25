@@ -38,3 +38,68 @@ java中Map数据结构定义了一个主要的接口：java.util.Map。主要实
 存储结构如图：
 ![](http://icepear.oss-cn-shenzhen.aliyuncs.com/javautil/map/hashmap.png)
 HashMap在1.7中只用到了数组和链表，代码也只有一千多行。上图展示的是1.8的存储结构，在1.8中加入了红黑树，在链表大于8的时候转换为红黑树；扩容后导致红黑树节点在小于6时，又会转换成链表。代码量虽然翻倍了，带来的确实性能的提升。
+HashMap 1.8结构代码如下
+```java
+static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // 16 默认hashmap的容量
+static final int MAXIMUM_CAPACITY = 1 << 30; //hashmap最大的容量
+static final float DEFAULT_LOAD_FACTOR = 0.75f; // 负载因子，跟扩容有关，后面会提到
+static final int TREEIFY_THRESHOLD = 8; //转换成红黑树的阀值
+static final int UNTREEIFY_THRESHOLD = 6;//红黑树转成链表的阀值
+static final int MIN_TREEIFY_CAPACITY = 64;//转换成红黑树最小需要hash数组中的数量大于64
+
+// Node 节点
+static class Node<K,V> implements Map.Entry<K,V> {
+        final int hash; //hash值
+        final K key; // 键
+        V value; // 值
+        Node<K,V> next; // 链表下一个节点
+        ··· //一些默认函数省略掉
+    }
+
+transient Node<K,V>[] table; // 数组
+transient Set<Map.Entry<K,V>> entrySet; //缓存了hashmap中的node
+transient int size; //存储的node数量
+transient int modCount; //结构修改次数，跟Fail-Fast机制有关
+int threshold; // 能负载的node数量（Capacity*loadFactor）初识值 16*0.75 =12
+final float loadFactor; //负载因子
+//构造函数，程序员传初始化容量和负载因子进来（一般不用）因为0.75这个值是经过大量的统计计算得出来的结论，一般不更改
+//也就是说容量到达Capacity的0.75时，进行扩容操作。不至于loadFactor过大，导致hash碰撞过多，太小，扩容次数太多影响性能
+public HashMap(int initialCapacity, float loadFactor) {
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal initial capacity: " +
+                                            initialCapacity);
+    if (initialCapacity > MAXIMUM_CAPACITY)
+        initialCapacity = MAXIMUM_CAPACITY;
+    if (loadFactor <= 0 || Float.isNaN(loadFactor))
+        throw new IllegalArgumentException("Illegal load factor: " +
+                                            loadFactor);
+    this.loadFactor = loadFactor;
+    this.threshold = tableSizeFor(initialCapacity);
+}
+// 构造函数，初始化容量（最好也是2的N次幂）这个会影响hash定位
+public HashMap(int initialCapacity) {
+    this(initialCapacity, DEFAULT_LOAD_FACTOR);
+}
+//最常用的构造函数，使用默认的0.75作为负载因子
+public HashMap() {
+    this.loadFactor = DEFAULT_LOAD_FACTOR; 
+}
+// 构造函数，传一个map进来，复制到本hashmap
+public HashMap(Map<? extends K, ? extends V> m) {
+    this.loadFactor = DEFAULT_LOAD_FACTOR;
+    putMapEntries(m, false);//这个函数将用到m这个map中的entrySet，目的是将m中的node通过put函数复制到本hashmap中
+}
+//树节点
+static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
+    TreeNode<K,V> parent;  // 根节点
+    TreeNode<K,V> left;    // 左节点
+    TreeNode<K,V> right;   // 右节点
+    TreeNode<K,V> prev;    // 删除后需要取消链接
+    boolean red;
+    //一些红黑树操作的函数
+    ···
+}
+```
+
+# 实现说明
+主要从hashmap的put说明，put操作会进行三步，**hash定位**，**插入**，**扩容**
