@@ -39,6 +39,7 @@ java中Map数据结构定义了一个主要的接口：java.util.Map。主要实
 ![](http://icepear.oss-cn-shenzhen.aliyuncs.com/javautil/map/hashmap.png)
 HashMap在1.7中只用到了数组和链表，代码也只有一千多行。上图展示的是1.8的存储结构，在1.8中加入了红黑树，在链表大于8的时候转换为红黑树；扩容后导致红黑树节点在小于6时，又会转换成链表。代码量虽然翻倍了，带来的确实性能的提升。
 HashMap 1.8结构代码如下
+
 ```java
 static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // 16 默认hashmap的容量
 static final int MAXIMUM_CAPACITY = 1 << 30; //hashmap最大的容量
@@ -102,4 +103,44 @@ static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
 ```
 
 # 实现说明
-主要从hashmap的put说明，put操作会进行三步，**hash定位**，**插入**，**扩容**
+主要从hashmap的主要三个步骤进行说明，**hash定位**，**插入**，**扩容**
+
+## hash定位
+
+hash定位是HashMap比较核心的方法了，上面我们了解到HashMap的结构为数组，既然是数组，就会有下标，那么这个hash值就是数组的下标，也正是HashMap可以根据key快速查找定位到Value的原因
+下面看下1.7中hash的源码
+
+```java
+final int hash(Object k) {
+    int h = hashSeed;
+    if (0 != h && k instanceof String) {
+        return sun.misc.Hashing.stringHash32((String) k);
+    }
+
+    h ^= k.hashCode();
+    h ^= (h >>> 20) ^ (h >>> 12);
+    return h ^ (h >>> 7) ^ (h >>> 4);
+}
+static int indexFor(int h, int length) {
+     return h & (length-1);
+}
+```
+
+在1.8中做了改进
+
+```java
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+```
+
+1.8中虽然取消了indexFor函数，但是在put和get的时候都通过了 **tab[i = (n - 1) & hash]** 来定位，原理跟1.7是一样的
+可以看出，不管是哪个版本，算法大致分为 **取key的hashcode**，**高位运算** **取模运算**
+为了让hash值均匀分布，会采用高位运算，让小的值的高位也参与运算;然后拿运算后key的hashcode对数组的长度进行模运算定位数组中的位置，但是细心一点就会发现，取模运算并没有使用%运算，
+因为模运算是很耗费性能的，所以采用与运算，可以说这个与运算设计的是相当精巧了。这也就是为什么数组的长度一定要是2的N次幂长度的原因，因为当length等于2的n次幂时，h&(length-1)就等于h%length
+
+## put实现
+
+我们知道HashMap的时间复杂度为O(1)，但是当Hash碰撞率过高时hashmap就会遍历链表，导致某些情况时间复杂度提高至O(n)；所以好的hash算法以及扩容机制是相当重要的，下面就讲讲hashmap插入值的原理
+
