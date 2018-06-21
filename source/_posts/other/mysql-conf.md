@@ -15,7 +15,9 @@ categories:
 文件的下载链接 [配置文件](http://icepear.oss-cn-shenzhen.aliyuncs.com/other/mysql-conf/my.cnf)
 
 # 配置内容
-```
+
+```conf
+
 # 自用Docker MySql5.7配置文件my.cnf设置 
 # 可参考https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html
 
