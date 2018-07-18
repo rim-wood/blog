@@ -54,8 +54,8 @@ comment:
     duoshuo: # enter duoshuo shortname here
     youyan: # enter youyan uid here
     gitalk:
-        clientID: 67a70dbaf4b73afeca4d
-        clientSecret: 3680bfe53fd43fc415fc980b6c91b17004c3c22b
+        clientID: 5c65270f09aa1a999b42
+        clientSecret: 66dd62e2a50a6d5137c7fd89b665a350c5a1ae2a
         repo: rim-wood.github.io
         owner: rim-wood
         admin:
