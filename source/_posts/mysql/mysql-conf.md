@@ -6,7 +6,7 @@ toc: true
 tags: 
 - Mysql
 categories:
-- other
+- mysql
 ---
 最近对mysql的配置进行了了解，通过一些文档，所以把配置的一些参数都罗列了一下
 <!--more-->

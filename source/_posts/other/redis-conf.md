@@ -1,5 +1,5 @@
 ---
-banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/other/redis-conf/redis.png
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/other/redis-conf/redis.jpeg
 title: redis 配置解析
 date: 2018-06-21 19:30:02
 toc: true
