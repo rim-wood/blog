@@ -192,28 +192,29 @@ mysql 常用函数，使用sql必然避免不了使用函数，函数往往能�
 **DATE_ADD(date,INTERVAL exper type)**重点说明一下，
 其中 INTERVAL 是间隔类型关键字，expr 是表达式， type是类型，
 类型表如下
-    | type | 解释 |
-    | - | - |
-    | MICROSECOND | 间隔单位：毫秒 |
-    | SECOND | 间隔单位：秒 |
-    | MINUTE | 间隔单位：分钟 |
-    | HOUR | 间隔单位：小时 |
-    | DAY | 间隔单位：天 |
-    | WEEK | 间隔单位：星期 |
-    | MONTH | 间隔单位：月 |
-    | QUARTER | 间隔单位：季度 |
-    | YEAR | 间隔单位：年 |
-    | SECOND_MICROSECOND | 复合型，间隔单位：秒、毫秒，expr可以用两个值来分别指定秒和毫秒 |
-    | MINUTE_MICROSECOND | 复合型，间隔单位：分、毫秒 |
-    | MINUTE_SECOND | 复合型，间隔单位：分、秒 |
-    | HOUR_MICROSECOND | 复合型，间隔单位：小时、毫秒 |
-    | HOUR_SECOND | 复合型，间隔单位：小时、秒 |
-    | HOUR_MINUTE | 复合型，间隔单位：小时分 |
-    | DAY_MICROSECOND | 复合型，间隔单位：天、毫秒 |
-    | DAY_SECOND | 复合型，间隔单位：天、秒 |
-    | DAY_MINUTE | 复合型，间隔单位：天、分 |
-    | DAY_HOUR | 复合型，间隔单位：天、小时 |
-    | YEAR_MONTH | 复合型，间隔单位：年、月 |
+
+| type | 解释 |
+| - | - |
+| MICROSECOND | 间隔单位：毫秒 |
+| SECOND | 间隔单位：秒 |
+| MINUTE | 间隔单位：分钟 |
+| HOUR | 间隔单位：小时 |
+| DAY | 间隔单位：天 |
+| WEEK | 间隔单位：星期 |
+| MONTH | 间隔单位：月 |
+| QUARTER | 间隔单位：季度 |
+| YEAR | 间隔单位：年 |
+| SECOND_MICROSECOND | 复合型，间隔单位：秒、毫秒，expr可以用两个值来分别指定秒和毫秒 |
+| MINUTE_MICROSECOND | 复合型，间隔单位：分、毫秒 |
+| MINUTE_SECOND | 复合型，间隔单位：分、秒 |
+| HOUR_MICROSECOND | 复合型，间隔单位：小时、毫秒 |
+| HOUR_SECOND | 复合型，间隔单位：小时、秒 |
+| HOUR_MINUTE | 复合型，间隔单位：小时分 |
+| DAY_MICROSECOND | 复合型，间隔单位：天、毫秒 |
+| DAY_SECOND | 复合型，间隔单位：天、秒 |
+| DAY_MINUTE | 复合型，间隔单位：天、分 |
+| DAY_HOUR | 复合型，间隔单位：天、小时 |
+| YEAR_MONTH | 复合型，间隔单位：年、月 |
 
 例如
     ```sql
