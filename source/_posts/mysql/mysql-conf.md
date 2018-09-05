@@ -12,14 +12,31 @@ categories:
 <!--more-->
 
 # 下载链接
+
 文件的下载链接 [配置文件](http://icepear.oss-cn-shenzhen.aliyuncs.com/other/mysql-conf/my.cnf)
+
+# docker 运行
+
+```sh
+docker run --name mysql \
+ -p 3306:3306 \
+ -v $PWD/mysql/conf:/etc/mysql/conf.d \
+ -v $PWD/mysql/mnt:/home/mnt \
+ -v $PWD/mysql/db:/var/lib/mysql \
+ -v $PWD/mysql/logs:/home/log \
+ -v $PWD/mysql/audit:/home/audit \
+ -e MYSQL_ROOT_PASSWORD=123456 \
+ -e TZ=Asia/Shanghai \
+ --restart=always -d mysql
+
+```
 
 # 配置内容
 
 ```conf
 
 # 自用Docker MySql5.7配置文件my.cnf设置 
-# 可参考https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html
+# 可参考https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html
 
 [mysqld]
 pid-file  = /var/run/mysqld/mysqld.pid
@@ -170,7 +187,7 @@ master_info_repository = TABLE
 relay_log_info_repository = TABLE
 
 # 开启mysql binlog二进制日志功能
-log_bin = /home/log/bin.log
+log_bin = /var/lib/mysql/mysql-bin
 
 # 当每进行n次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。设置为零是让系统自行决定
 # 为1时安全性高，只丢失一次事物数据，消耗同样也大
