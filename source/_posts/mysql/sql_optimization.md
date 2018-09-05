@@ -1,5 +1,4 @@
 ---
-banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/sql/join/sql_join.png
 title: sql的优化
 date: 2017-11-15 18:00:00
 toc: true
