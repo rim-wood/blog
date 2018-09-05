@@ -265,30 +265,43 @@ final Node<K,V>[] resize() {
                     ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                 //数组节点操作（非常精辟的一段操作，简直牛逼）
                 else { // preserve order
+                    //定义四个节点，老位置的首尾节点，倍数位置的首尾节点（倍数指的是“例如当前位置为1，老容量为8，扩容一倍就加8，所以倍数位置是9”）
                     Node<K,V> loHead = null, loTail = null;
                     Node<K,V> hiHead = null, hiTail = null;
+                    //遍历链表节点
                     Node<K,V> next;
                     do {
+                        //链表下一个节点
                         next = e.next;
+                        //如果e的hash值与上老容量等于0，在老位置操作
                         if ((e.hash & oldCap) == 0) {
+                            //如果老位置尾节点为空，则老位置头位置就是e
                             if (loTail == null)
                                 loHead = e;
+                            // 否则老位置尾节点的 next 指向 e
                             else
                                 loTail.next = e;
+                            // 老位置尾节点也指向e，构造链表
                             loTail = e;
                         }
+                        //如果hash与值不等于0 就放入到倍数节点去
                         else {
+                            //如果倍数尾节点等于null，倍数节点头位置为e
                             if (hiTail == null)
                                 hiHead = e;
+                            //否则倍数尾节点的 next 指向 e
                             else
                                 hiTail.next = e;
+                            // 倍数尾节点 为 e，构造新链表
                             hiTail = e;
                         }
                     } while ((e = next) != null);
+                    //如果老位置有值，则在老位置加上链表
                     if (loTail != null) {
                         loTail.next = null;
                         newTab[j] = loHead;
                     }
+                    //如果倍数节点位置有值，则在倍数倍数加上链表
                     if (hiTail != null) {
                         hiTail.next = null;
                         newTab[j + oldCap] = hiHead;
@@ -300,3 +313,31 @@ final Node<K,V>[] resize() {
     return newTab;
 }
 ```
+
+这跟java 7是完全不同的,java 7是采用遍历后重新hash的方法，并且链表采用的是头插法
+
+```java
+void transfer(Entry[] newTable, boolean rehash) {
+        int newCapacity = newTable.length;
+        // 遍历 hash 表
+        for (Entry<K,V> e : table) {
+            // 遍历 节点 中的链表
+            while(null != e) {
+                Entry<K,V> next = e.next;
+                // 重新hash
+                if (rehash) {
+                    e.hash = null == e.key ? 0 : hash(e.key);
+                }
+                //定位
+                int i = indexFor(e.hash, newCapacity);
+                //头插法，把原有的数据发到next后面去
+                e.next = newTable[i];
+                //头节点放新数据
+                newTable[i] = e;
+                // 移动至链表下一节点
+                e = next;
+            }
+        }
+    }
+```
+
