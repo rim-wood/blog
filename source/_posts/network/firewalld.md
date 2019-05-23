@@ -6,8 +6,9 @@ toc: true
 tags: 
 - linux
 - 防火墙
+- network
 categories:
-- other
+- network
 ---
 目前大多情况都使用CentOs7，但Centos升级到7之后，内置的防火墙已经从iptables变成了firewalld。所以两个都记录一下。
 <!--more-->
