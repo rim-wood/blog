@@ -7,18 +7,36 @@
     .hidden {
         display: none;
     }
-    
-    .donate_bar a.btn_donate {
+    .donate_bar .btn{
         display: inline-block;
-        width: 82px;
-        height: 82px;
-        background: url("http://7xsl28.com1.z0.glb.clouddn.com/btn_reward.gif") no-repeat;
-        _background: url("http://7xsl28.com1.z0.glb.clouddn.com/btn_reward.gif") no-repeat;
-        -webkit-transition: background 0s;
-        -moz-transition: background 0s;
-        -o-transition: background 0s;
-        -ms-transition: background 0s;
-        transition: background 0s;
+        margin-bottom: 0;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857;
+        border-radius: 4px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .donate_bar .btn_donate {
+        display: inline-block;
+        margin: 20px;
+        padding: 8px 25px;
+        font-size: 20px;
+        color: #fff;
+        background-color: #ea6f5a;
+        border-radius: 20px;
     }
     
     .donate_bar a.btn_donate:hover {
@@ -43,7 +61,7 @@
     <span id="busuanzi_container_page_pv">本文总阅读量<span id="busuanzi_value_page_pv"></span>次</span>
     --------------------------------------
     <br>
-    <a id="btn_donate" class="btn_donate" target="_self" href="javascript:;" title="Donate 打赏"></a>
+    <div id="btn_donate" class="btn btn_donate" target="_self" href="javascript:;" title="Donate 打赏"> 赞赏支持 </div>
     <span class="donate_txt">
     大部分文章都是自创，如您觉得文章不错，对您有所帮助，转载的时候请注明出处，也可以通过“支付宝”或“微信支付”请我喝咖啡。
 </span>
