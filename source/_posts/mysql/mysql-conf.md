@@ -76,7 +76,7 @@ port = 3306
 
 # 设置autocommit=0，则用户将一直处于某个事务中，直到执行一条commit提交或rollback语句才会结束当前事务重新开始一个新的事务。
 # set autocommit=0的好处是在频繁开启事务的场景下，减少一次begin的交互。
-autocommit = 0
+autocommit = 1
 
 # utf8mb4编码是utf8编码的超集，兼容utf8，并且能存储4字节的表情字符。 
 # 采用utf8mb4编码的好处是：存储与获取数据的时候，不用再考虑表情字符的编码与解码问题。
@@ -88,8 +88,8 @@ collation-server = utf8mb4_general_ci
 # 设置client连接mysql时的字符集,防止乱码
 init_connect='SET NAMES utf8mb4'
 
-# 事务隔离级别，默认为可重复读，mysql默认可重复读级别（此级别下可能参数很多间隙锁，影响性能）
-transaction_isolation = READ-COMMITTED
+# 事务隔离级别，默认为可重复读，mysql默认可重复读级别
+transaction_isolation = REPEATABLE-READ
 
 # 是否区分大小写，0区分，1不区分，2，表名存储以规定格式存，但比较还是用小写
 lower_case_table_names = 1
