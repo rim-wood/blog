@@ -1,5 +1,5 @@
 ---
-banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/mq/rabbitmq.png
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/mq/rocketmq.png
 title: docker中运行RabbitMQ 
 date: 2020-04-20 19:30:02
 toc: true
