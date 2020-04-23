@@ -14,11 +14,11 @@ RabbitMQ服务器使用Erlang编程语言编写，并基于Open Telecom Platform
 主要用于各个业务场景的拆分，降低系统耦合性。本文主要介绍在docker中如何运行rabbitmq中间件
 <!--more-->
 
-# 下载及简单运行
+# 一、下载及简单运行
 
-rabbitmq官方已经编写了docker镜像，![镜像地址](https://hub.docker.com/_/rabbitmq?tab=description)。
+rabbitmq官方已经编写了docker镜像，[镜像地址](https://hub.docker.com/_/rabbitmq?tab=description)。
 
-### 1. 下载
+### 1.下载
 
 ```bash
 docker pull rabbitmq # rabbitmq最小安装
@@ -26,7 +26,7 @@ docker pull rabbitmq # rabbitmq最小安装
 docker pull rabbitmq:management #带有web控制台的镜像
 ```
 
-### 2. 运行
+### 2.运行
 
 ```bash
 docker run -d --hostname my-rabbit --name some-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:management
@@ -34,7 +34,7 @@ docker run -d --hostname my-rabbit --name some-rabbit -p 15672:15672 -p 5672:567
 
 访问[http://localhost:15672](http://localhost:15672) 即可访问rabbitmq的管理界面。**默认的用户名/密码为 guest/guest**
 
-# 带参数运行
+# 二、带参数运行
 
 ## 通过cookie连接rabbitmq
 
@@ -57,7 +57,7 @@ docker service create --name rabbitmq-cookie --secret source=my-erlang-cookie,ta
 
 ## 其他参数
 
-1. SSL 配置
+### 1.SSL 配置
 
 ```bash
 # 对于使用管理插件的SSL配置
@@ -69,7 +69,7 @@ RABBITMQ_MANAGEMENT_SSL_KEYFILE
 RABBITMQ_MANAGEMENT_SSL_VERIFY
 ```
 
-2. 设置默认用户和密码
+### 2.设置默认用户和密码
 
 如果要更改**guest / guest**的默认用户名和密码，可以使用**RABBITMQ_DEFAULT_USER**和**RABBITMQ_DEFAULT_PASS**环境变量来进行更改.
 
@@ -77,7 +77,7 @@ RABBITMQ_MANAGEMENT_SSL_VERIFY
  docker run -d --hostname my-rabbit --name some-rabbit -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password rabbitmq:3-management
 ```
 
-3. 设置默认vhost
+### 3.设置默认vhost
 
 可以使用**RABBITMQ_DEFAULT_VHOST**来改变vhost
 
@@ -85,7 +85,7 @@ RABBITMQ_MANAGEMENT_SSL_VERIFY
 docker run -d --hostname my-rabbit --name some-rabbit -e RABBITMQ_DEFAULT_VHOST=my_vhost rabbitmq:3-management
 ```
 
-4. 开启插件
+### 4.开启插件
 
 - 修改dockerfile的方法
 
@@ -102,12 +102,12 @@ RUN rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_federation_manageme
 [rabbitmq_federation_management,rabbitmq_management,rabbitmq_mqtt,rabbitmq_stomp].
 ```
 
-5. 其他配置
+### 5.其他配置
 
 其他配置我们可以通过配置文件配置，容器内配置文件地址在/etc/rabbitmq/rabbitmq.conf，文件内容可[参考官网](https://www.rabbitmq.com/configure.html#configuration-files)
 在运行的时候，讲写好的配置文件改在到容器内的地址
 
-# 插件
+# 三、插件
 
 上面我们讲到了插件的开启方式，但是对于插件我们怎么安装呢，在rabbitmq中，插件都放在了/plugins文件夹下，所以我们在运行rabbitmq容器时，
 可以把/plugins文件夹挂在到宿主机上,以及开启插件的文件

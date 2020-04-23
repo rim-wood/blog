@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/k8s/k8s.png
 title: helm 总结
 date: 2019-09-20 20:30:02
 toc: true

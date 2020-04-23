@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/k8s/k8s.png
 title: k8s 存储
 date: 2019-09-12 19:30:02
 toc: true

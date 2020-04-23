@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/k8s/k8s.png
 title: k8s service访问控制
 date: 2019-08-09 22:30:08
 toc: true

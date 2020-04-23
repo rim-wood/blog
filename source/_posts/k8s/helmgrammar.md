@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/k8s/k8s.png
 title: helm 语法
 date: 2019-09-25 20:30:02
 toc: true

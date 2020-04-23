@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/k8s/k8s.png
 title: k8s 基础定义
 date: 2019-08-01 21:30:00
 toc: true

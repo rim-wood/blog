@@ -1,4 +1,5 @@
 ---
+banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/k8s/k8s.png
 title: k8s 集群调度
 date: 2019-09-15 20:30:02
 toc: true
