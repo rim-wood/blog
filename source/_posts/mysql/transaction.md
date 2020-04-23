@@ -4,9 +4,9 @@ title: mysql 事务解析
 date: 2019-06-20 20:30:00
 toc: true
 tags: 
-- Mysql
-categories:
 - transaction
+categories:
+- mysql
 ---
 最近mysql碰到一个问题，用Navicat插入数据之后，界面上可以看到数据。应用死活查不到数据，期初怀疑是不是锁表了，后面查看锁的情况发现并没有锁表的情况。后面考虑到可能是事务的问题，由于我改过配置文件，我仔细排查一番
 果然发现，我把autocommit设置为了0，也就是必须要commit才能提交事务。所以干脆把mysql整个事务情况都记录一下。
