@@ -1,7 +1,7 @@
 ---
 banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/other/mysql-conf/mysql.png
 title: mysql 部署在k8s时出现问题
-date: 2018-05-02 14:30:02
+date: 2020-05-02 14:30:02
 toc: true
 tags: 
 - Mysql
