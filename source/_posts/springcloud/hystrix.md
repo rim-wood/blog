@@ -4,7 +4,6 @@ title: Hystrix 熔断器
 date: 2019-01-20 20:30:02
 toc: true
 tags: 
-- spring cloud
 - Hystrix
 categories:
 - springcloud
@@ -94,9 +93,9 @@ semaphore应该占整个容器（tomcat）的线程池的一小部分。
 
 线程数默认值10适用于大部分情况（有时可以设置得更小），如果需要设置得更大，那有个基本得公式可以follow：
 
-requests per second at peak when healthy × 99th percentile latency in seconds + some breathing room
 
-```
+```text
+
 requests per second at peak when healthy × 99th percentile latency in seconds + some breathing room
 
 每秒最大支撑的请求数 (99%平均响应时间 + 缓存值)
@@ -117,4 +116,4 @@ requests per second at peak when healthy × 99th percentile latency in seconds +
 
 - **hystrix.threadpool.default.queueSizeRejectionThreshold** 即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝。因为maxQueueSize不能被动态修改，这个参数将允许我们动态设置该值。if maxQueueSize == -1，该字段将不起作用
 
-- **hystrix.threadpool.default.keepAliveTimeMinutes** 如果corePoolSize和maxPoolSize设成一样（默认实现）该设置无效。如果通过plugin（https://github.com/Netflix/Hystrix/wiki/Plugins）使用自定义实现，该设置才有用，默认1.
+- **hystrix.threadpool.default.keepAliveTimeMinutes** 如果corePoolSize和maxPoolSize设成一样（默认实现）该设置无效。如果通过(plugin)[https://github.com/Netflix/Hystrix/wiki/Plugins]使用自定义实现，该设置才有用，默认1.
