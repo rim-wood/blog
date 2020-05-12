@@ -310,7 +310,9 @@ X-Forwarded-For: 0.0.0.1, 0.0.0.2, 0.0.0.3
 | [4, Integer.MAX_VALUE] | 0.0.0.1 |
 
 Java 配置方式:
+
 GatewayConfig.java
+
 ```java
 RemoteAddressResolver resolver = XForwardedRemoteAddressResolver
     .maxTrustedIndex(1);
@@ -329,97 +331,52 @@ RemoteAddressResolver resolver = XForwardedRemoteAddressResolver
 # 6. 路由过滤器
 
 
-```yaml
-
-```
 
 # 7. 全局过滤器
 
 
-```yaml
-
-```
 
 # 8. 请求头过滤器
 
 
-```yaml
-
-```
 
 # 9. TLS and SSL
 
 
-```yaml
-
-```
 
 # 10. 配置
 
 
-```yaml
-
-```
 
 # 11. 路由原数据配置
 
 
-```yaml
-
-```
 
 # 12. Http超时配置
 
 
-```yaml
-
-```
 
 # 13. Reactor Netty 访问日志
 
 
-```yaml
-
-```
 
 # 14. CORS 配置
 
 
-```yaml
-
-```
 
 # 15. Actuator API
 
 
-```yaml
-
-```
-
 # 16. 故障排除
 
 
-```yaml
-
-```
 
 # 17. 开发者想到
 
 
-```yaml
-
-```
 
 # 18. 使用 Spring MVC 或 Webflux创建一个简单的路由
 
 
-```yaml
-
-```
-
 # 19. 配置属性表
 
-
-```yaml
-
-```
