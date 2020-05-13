@@ -773,30 +773,449 @@ spring:
 
 ## 6.13. The RemoveRequestHeader GatewayFilter Factory
 
+RemoveRequestHeader 过滤器只有一个参数 name，用来删除请求头header中的参数
 
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: removerequestheader_route
+        uri: https://example.org
+        filters:
+        - RemoveRequestHeader=X-Request-Foo
+```
+这将删除X-Request-Foo标头，然后将其发送到下游。
 
 ## 6.14. RemoveResponseHeader GatewayFilter Factory
+
+RemoveResponseHeader 过滤器只有一个参数 name，用来删除返回头header中的参数
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: removeresponseheader_route
+        uri: https://example.org
+        filters:
+        - RemoveResponseHeader=X-Response-Foo
+```
+这将从响应中删除X-Response-Foo标头，然后将其返回到网关客户端。
+要删除任何类型的敏感标头，您应该为可能要执行此操作的所有路由配置此过滤器.
+另外，您可以使用s pring.cloud.gateway.default-filters 一次配置此过滤器，并将其应用于所有路由。
+
 ## 6.15. The RemoveRequestParameter GatewayFilter Factory
+
+RemoveRequestParameter 过滤器有一个参数 name ，它用来删除的查询参数。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: removerequestparameter_route
+        uri: https://example.org
+        filters:
+        - RemoveRequestParameter=red
+```
+
+这将删除red参数，然后再将其发送到下游。
+
 ## 6.16. The RewritePath GatewayFilter Factory
+
+RewritePath 过滤器有两个参数 regexp 正则规则 和 replacement 参数，这使用Java正则表达式来灵活地重写请求路径.
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: rewritepath_route
+        uri: https://example.org
+        predicates:
+        - Path=/red/**
+        filters:
+        - RewritePath=/red/(?<segment>/?.*), /$\{segment}
+```
+
+对于/red/blue的请求路径，这会在发出下游请求之前将路径设置为/blue。请注意，由于YAML规范，应将$替换为$\。
+
 ## 6.17. RewriteLocationResponseHeader GatewayFilter Factory
+
+RewriteLocationResponseHeader 过滤器用于修改返回头中的Location，通常用于摆脱后端特定的细节。
+它有stripVersionMode, locationHeaderName, hostValue, protocolsRegex四个参数
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: rewritelocationresponseheader_route
+        uri: http://example.org
+        filters:
+        - RewriteLocationResponseHeader=AS_IN_REQUEST, Location, ,
+``` 
+
+对于POST api.example.com/some/object/name的请求，如果返回头中的location的值为object-service.prod.example.net/v2/some/object/id，将被重写为api.example.com/some/object/id。
+
+stripVersionMode参数具有以下可能的值：NEVER_STRIP，AS_IN_REQUEST（默认值）和ALWAYS_STRIP，用来是否剥离出/v1或者/v2这类接口版本路径
+
+- NEVER_STRIP：即使原始请求路径不包含任何版本，也不会剥离该版本。
+- AS_IN_REQUEST 仅当原始请求路径不包含任何版本时，才剥离该版本。
+- ALWAYS_STRIP 即使原始请求路径包含版本，也始终剥离版本。
+
+hostValue参数（如果提供）用于替换响应Location标头的 host:port 部分。如果未提供，则使用主机请求标头的值。
+
+protocolRegex参数必须是有效的正则表达式字符串，协议名称与之匹配。如果不匹配，则过滤器不执行任何操作。默认值为http | https | ftp | ftps
+
 ## 6.18. The RewriteResponseHeader GatewayFilter Factory
+
+RewriteResponseHeader 过滤器包含 name, regexp和 replacement 参数.。通过使用Java正则表达式灵活地重写响应头的值
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: rewriteresponseheader_route
+        uri: https://example.org
+        filters:
+        - RewriteResponseHeader=X-Response-Red, , password=[^&]+, password=***
+```
+
+对于一个/42?user=ford&password=omg!what&flag=true的header值，在做下游请求时将被设置为/42?user=ford&password=***&flag=true，由于YAML规范，请使用 $\替换 $
+
 ## 6.19. The SaveSession GatewayFilter Factory
+
+SaveSession GatewayFilter Factory将调用转发到下游之前强制执行WebSession::save 操作。这在使用 Spring Session 之类时特别有用，需要确保会话状态在进行转发调用之前已保存。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: save_session
+        uri: https://example.org
+        predicates:
+        - Path=/foo/**
+        filters:
+        - SaveSession
+```
+
+如果您将Spring Security与Spring Session集成在一起，并想确保安全性详细信息已转发到远程进程，那么这一点至关重要。
+
 ## 6.20. The SecureHeaders GatewayFilter Factory
+
+根据此[博客文章](https://blog.appcanary.com/2017/http-security-headers.html)中的建议，SecureHeaders GatewayFilter工厂将许多headers添加到响应中。
+
+添加了以下标头（以其默认值显示):
+- X-Xss-Protection:1 (mode=block)
+- Strict-Transport-Security (max-age=631138519)
+- X-Frame-Options (DENY)
+- X-Content-Type-Options (nosniff)
+- Referrer-Policy (no-referrer)
+- Content-Security-Policy (default-src 'self' https:; font-src 'self' https: data:; img-src 'self' https: data:; object-src 'none'; script-src https:; style-src 'self' https: 'unsafe-inline)'
+- X-Download-Options (noopen)
+- X-Permitted-Cross-Domain-Policies (none)
+
+要更改默认值，请在spring.cloud.gateway.filter.secure-headers命名空间中设置适当的属性。
+可以使用以下属性：
+- xss-protection-header
+- strict-transport-security
+- x-frame-options
+- x-content-type-options
+- referrer-policy
+- content-security-policy
+- x-download-options
+- x-permitted-cross-domain-policies
+
+要禁用默认值，请设置spring.cloud.gateway.filter.secure-headers.disable属性，并用逗号分隔值。
+
+以下示例显示了如何执行此操作：
+
+```yaml
+spring.cloud.gateway.filter.secure-headers.disable=x-frame-options,strict-transport-security
+```
+
 ## 6.21. The SetPath GatewayFilter Factory
+
+SetPath GatewayFilter 采用 template路径参数。它提供了一种通过允许路径的模板化segments来操作请求路径的简单方法。使用Spring Framework中的URI模板，允许多个匹配segments。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: setpath_route
+        uri: https://example.org
+        predicates:
+        - Path=/red/{segment}
+        filters:
+        - SetPath=/{segment}
+```
+
+对于一个 /red/blue 请求，在做下游请求前，路径将被设置为/blue
+
 ## 6.22. The SetRequestHeader GatewayFilter Factory
+
+SetRequestHeader 有两个参数 name 和 value,用来修改请求头中参数的值
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: setrequestheader_route
+        uri: https://example.org
+        filters:
+        - SetRequestHeader=X-Request-Red, Blue
+```
+
+该GatewayFilter用给定名称替换（而不是添加）所有header。因此，如果下游服务器响应 X-Request-Red:1234，则将其替换为 X-Request-Red:Blue，这是下游服务将收到的内容。
+
+SetRequestHeader知道用于匹配路径或主机的URI变量。URI变量可以在值中使用，并在运行时扩展。
+以下示例配置使用变量的SetRequestHeader GatewayFilter：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: setrequestheader_route
+        uri: https://example.org
+        predicates:
+        - Host: {segment}.myhost.org
+        filters:
+        - SetRequestHeader=foo, bar-{segment}
+```
+
 ## 6.23. The SetResponseHeader GatewayFilter Factory
+
+与SetRequestHeader大同小异，只是这是修改返回头的参数的值
+
 ## 6.24. The SetStatus GatewayFilter Factory
+
+SetStatus GatewayFilter Factory 包括唯一的 status 参数.必须是一个可用的 Spring HttpStatus。它可以是整数值404或字符串枚举NOT_FOUND。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: setstatusstring_route
+        uri: https://example.org
+        filters:
+        - SetStatus=BAD_REQUEST
+      - id: setstatusint_route
+        uri: https://example.org
+        filters:
+        - SetStatus=401
+```
+无论哪种情况，响应的HTTP状态都设置为401。
+
+您可以将SetStatus GatewayFilter配置为在响应的header中从代理请求返回原始HTTP状态代码。
+
+如果使用以下属性配置header，则会将其添加到响应中：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      set-status:
+        original-status-header-name: original-http-status
+```
+
 ## 6.25. The StripPrefix GatewayFilter Factory
+
+StripPrefix GatewayFilter Factory 包括一个parts参数。 parts参数指示在将请求发送到下游之前，要从请求中去除的路径的层数。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: nameRoot
+        uri: https://nameservice
+        predicates:
+        - Path=/name/**
+        filters:
+        - StripPrefix=2
+```
+
+通过网关对/name/blue/red的请求时，对nameservice的请求看起来像 http://nameservice/red。
+
 ## 6.26. The Retry GatewayFilter Factory
+
+Retry GatewayFilter Factory包括 retries, statuses, methods和 series 参数.
+
+- retries: 应尝试的重试次数
+- statuses: 应该重试的HTTP状态代码，用org.springframework.http.HttpStatus标识
+- methods: 应该重试的HTTP方法，用 org.springframework.http.HttpMethod标识
+- series: 要重试的一系列状态码，用 org.springframework.http.HttpStatus.Series标识
+- exceptions：应该重试的引发异常的列表。
+- backoff：为重试配置的指数补偿。在firstBackoff *（factor ^ n）的退避间隔之后执行重试，其中n是迭代。如果配置了maxBackoff，则将应用的最大退避限制为maxBackoff。如果basedOnPreviousValue为true，则使用prevBackoff * factor计算退避量。
+
+如果启用了以下默认值，则为“重试”筛选器配置：
+
+- retries: Three times
+- series: 5XX series
+- methods: GET method
+- exceptions: IOException and TimeoutException
+- backoff: disabled
+
+例子
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: retry_test
+        uri: http://localhost:8080/flakey
+        predicates:
+        - Host=*.retry.com
+        filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY
+            methods: GET,POST
+            backoff:
+              firstBackoff: 10ms
+              maxBackoff: 50ms
+              factor: 2
+              basedOnPreviousValue: false
+```
+
+当将重试过滤器与带有forward转发URL一起使用时，应仔细编写目标端点，以便在发生错误的情况下，它不会做任何可能导致响应发送到客户端并提交的操作。
+例如，如果目标端点是带注释的控制器，则目标控制器方法不应返回带有错误状态代码的ResponseEntity。
+相反，它应该引发Exception或发出错误信号（例如，通过Mono.error（ex）返回值），可以将重试过滤器配置为通过重试来处理。
+
+当将重试过滤器与任何具有主体的HTTP方法一起使用时，主体将被缓存，并且网关将受到内存的限制。
+正文缓存在ServerWebExchangeUtils.CACHED_REQUEST_BODY_ATTR定义的请求属性中。
+对象的类型是org.springframework.core.io.buffer.DataBuffer。
+
 ## 6.27. The RequestSize GatewayFilter Factory
+
+当请求大小大于允许的限制时，RequestSize GatewayFilter Factory可以限制请求不到达下游服务。过滤器以RequestSize作为参数，这是定义请求的允许大小限制(以字节为单位)。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: request_size_route
+        uri: http://localhost:8080/upload
+        predicates:
+        - Path=/upload
+        filters:
+        - name: RequestSize
+          args:
+            maxSize: 5000000
+```
+
+当请求因大小而被拒绝时， RequestSize GatewayFilter Factory 将响应状态设置为413 Payload Too Large，并带有额外的header errorMessage 。下面是一个 errorMessage的例子。
+
+```text
+errorMessage : Request size is larger than permissible limit. Request size is 6.0 MB where permissible limit is 5.0 MB
+```
+
+如果未在路由定义中作为过滤器参数提供，则默认请求大小将设置为5 MB。
+
 ## 6.28. Modify a Request Body GatewayFilter Factory
+
+您可以使用ModifyRequestBody筛选器筛选器来修改请求主体，然后将其由网关向下游发送。
+
+只能使用Java DSL来配置此过滤器
+
+```java
+@Bean
+public RouteLocator routes(RouteLocatorBuilder builder) {
+    return builder.routes()
+        .route("rewrite_request_obj", r -> r.host("*.rewriterequestobj.org")
+            .filters(f -> f.prefixPath("/httpbin")
+                .modifyRequestBody(String.class, Hello.class, MediaType.APPLICATION_JSON_VALUE,
+                    (exchange, s) -> return Mono.just(new Hello(s.toUpperCase())))).uri(uri))
+        .build();
+}
+
+static class Hello {
+    String message;
+
+    public Hello() { }
+
+    public Hello(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+```
+
 ## 6.29. Modify a Response Body GatewayFilter Factory
+
+您可以使用ModifyResponseBody筛选器来修改响应正文，然后将其发送回客户端。
+
+只能使用Java DSL来配置此过滤器
+
+```java
+@Bean
+public RouteLocator routes(RouteLocatorBuilder builder) {
+    return builder.routes()
+        .route("rewrite_response_upper", r -> r.host("*.rewriteresponseupper.org")
+            .filters(f -> f.prefixPath("/httpbin")
+                .modifyResponseBody(String.class, String.class,
+                    (exchange, s) -> Mono.just(s.toUpperCase()))).uri(uri)
+        .build();
+}
+```
+
 ## 6.30. Default Filters
 
+要添加过滤器并将其应用于所有路由，可以使用spring.cloud.gateway.default-filters。
+此属性采用过滤器列表。
+以下例子定义了一组默认过滤器
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      default-filters:
+      - AddResponseHeader=X-Response-Default-Red, Default-Blue
+      - PrefixPath=/httpbin
+```
 
 # 7. 全局过滤器
 
+GlobalFilter接口与GatewayFilter具有相同的签名。是有条件地应用于所有路由的特殊过滤器。
 
+## 7.1. Combined Global Filter and GatewayFilter Ordering
+
+
+
+## 7.2. Forward Routing Filter
+
+## 7.3. The LoadBalancerClient Filter
+
+## 7.4. The ReactiveLoadBalancerClientFilter
+
+## 7.5. The Netty Routing Filter
+
+## 7.6. The Netty Write Response Filter
+
+## 7.7. The RouteToRequestUrl Filter
+
+## 7.8. The Websocket Routing Filter
+
+## 7.9. The Gateway Metrics Filter
+
+## 7.10. Marking An Exchange As Routed
 
 # 8. 请求头过滤器
 
