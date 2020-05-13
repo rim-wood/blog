@@ -330,6 +330,468 @@ RemoteAddressResolver resolver = XForwardedRemoteAddressResolver
 
 # 6. 路由过滤器
 
+路由过滤器允许以某种方式修改传入的HTTP请求或传出的HTTP响应。路由过滤器适用于特定路由。Spring Cloud Gateway包括许多内置的GatewayFilter工厂。
+下面一一列举：
+详细的使用说明请参考[测试代码](https://github.com/spring-cloud/spring-cloud-gateway/tree/master/spring-cloud-gateway-core/src/test/java/org/springframework/cloud/gateway/filter/factory)
+
+## 6.1 AddRequestHeader GatewayFilter Factory
+
+添加请求头的过滤器，有两个参数，name和value。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: add_request_header_route
+        uri: https://example.org
+        filters:
+        - AddRequestHeader=X-Request-red, blue
+```
+将在请求头里面加入 X-Request-red:blue 这样的参数进去，下游就可以通过新的请求头拿到对应的值。
+
+当然也可以使用参数注入的方式，例如下面这样，将path路径上的参数，放入到header中：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: add_request_header_route
+        uri: https://example.org
+        predicates:
+        - Path=/red/{segment}
+        filters:
+        - AddRequestHeader=X-Request-Red, Blue-{segment}
+```
+
+## 6.2. The AddRequestParameter GatewayFilter Factory
+
+添加参数的过滤器，有两个参数，name和value。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: add_request_parameter_route
+        uri: https://example.org
+        filters:
+        - AddRequestParameter=red, blue
+```
+这会将red = blue添加到所有匹配请求的下游请求的查询字符串中。
+
+同样的也可以采用参数注入的方式，例如下面这样，将Host的参数，放入到查询字符串中：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: add_request_parameter_route
+        uri: https://example.org
+        predicates:
+        - Host: {segment}.myhost.org
+        filters:
+        - AddRequestParameter=foo, bar-{segment}
+```
+
+## 6.3. The AddResponseHeader GatewayFilter Factory
+
+添加返回头过滤器，有两个参数，name和value。
+跟上面差不多，不写了。
+
+## 6.4. The DedupeResponseHeader GatewayFilter Factory
+
+重复参数返回头删除过滤器，有两个参数 name 和 strategy ，name是返回头中的参数名称，strategy是策略，包含三种策略：RETAIN_FIRST (默认), RETAIN_LAST, RETAIN_UNIQUE.
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: dedupe_response_header_route
+        uri: https://example.org
+        filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+```
+
+这个例子表示当网关CORS逻辑和下游逻辑都将它们添加时，这将删除Access-Control-Allow-Credentials和Access-Control-Allow-Origin响应标头的重复值。
+
+## 6.5. The Hystrix GatewayFilter Factory
+
+Hystrix 是Netflix开源的断路器组件。Hystrix GatewayFilter允许你向网关路由引入断路器，保护你的服务不受级联故障的影响，并允许你在下游故障时提供fallback响应。
+
+要在项目中启用Hystrix网关过滤器，需要添加对 spring-cloud-starter-netflix-hystrix的依赖
+
+Hystrix GatewayFilter Factory 需要一个name参数，即HystrixCommand的名称。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: hystrix_route
+        uri: https://example.org
+        filters:
+        - Hystrix=myCommandName
+```
+
+这将剩余的过滤器包装在命令名为“myCommandName”的HystrixCommand中。
+
+hystrix过滤器还可以接受可选的fallbackUri 参数。目前，仅支持forward: 预设的URI，如果调用fallback，则请求将转发到与URI匹配的控制器。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: hystrix_route
+        uri: lb://backing-service:8088
+        predicates:
+        - Path=/consumingserviceendpoint
+        filters:
+        - name: Hystrix
+          args:
+            name: fallbackcmd
+            fallbackUri: forward:/incaseoffailureusethis
+        - RewritePath=/consumingserviceendpoint, /backingserviceendpoint
+```
+
+当调用hystrix fallback时，这将转发到/incaseoffailureusethis。
+*注意，这个示例还演示了（可选）通过目标URI上的'lb`前缀,使用Spring Cloud Netflix Ribbon 客户端负载均衡。*
+
+主要场景是使用fallbackUri 到网关应用程序中的内部控制器或处理程序。但是，也可以将请求重新路由到外部应用程序中的控制器或处理程序，如：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: ingredients
+        uri: lb://ingredients
+        predicates:
+        - Path=//ingredients/**
+        filters:
+        - name: Hystrix
+          args:
+            name: fetchIngredients
+            fallbackUri: forward:/fallback
+      - id: ingredients-fallback
+        uri: http://localhost:9994
+        predicates:
+        - Path=/fallback
+```
+
+在上面例子中，gateway应用程序中没有 fallback 实现，但是另一个应用程序中有一个接口实现，注册为“http://localhost:9994”。
+
+在将请求转发到fallback的情况下，Hystrix Gateway过滤还支持直接抛出Throwable 。它被作为ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR属性添加到ServerWebExchange中，可以在处理网关应用程序中的fallback时使用。
+
+对于外部控制器/处理程序方案，可以添加带有异常详细信息的header。可以在下面6.7的 FallbackHeaders GatewayFilter Factory section.中找到有关它的更多信息。
+
+hystrix配置参数（如 timeouts）可以使用全局默认值配置，也可以使用Hystrix wiki中所述属性进行配置。
+
+要为上面的示例路由设置5秒超时，将使用以下配置：
+
+```yaml
+hystrix.command.fallbackcmd.execution.isolation.thread.timeoutInMilliseconds: 5000
+```
+
+## 6.6. Spring Cloud CircuitBreaker GatewayFilter Factory
+
+Spring Cloud CircuitBreaker 使用Spring Cloud CircuitBreaker API将网关路由包装在断路器中。
+Spring Cloud CircuitBreaker支持可与Spring Cloud Gateway一起使用的两个库Hystrix和Resilience4J。
+由于Netflix已将Hystrix置于仅维护模式，因此建议您使用Resilience4J。
+
+要启用Spring Cloud CircuitBreaker过滤器，您需要在类路径上放置spring-cloud-starter-circuitbreaker-reactor-resilience4j或spring-cloud-starter-netflix-hystrix。
+
+以下示例配置了一个Spring Cloud CircuitBreaker GatewayFilter：
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: circuitbreaker_route
+        uri: https://example.org
+        filters:
+        - CircuitBreaker=myCircuitBreaker
+```
+要配置断路器，请参阅所使用的基础断路器实现的配置。
+- [Resilience4J Documentation](https://cloud.spring.io/spring-cloud-circuitbreaker/reference/html/spring-cloud-circuitbreaker.html)
+- [Hystrix Documentation]()
+
+Spring Cloud CircuitBreaker过滤器还可以接受可选的fallbackUri参数。
+当前，仅支持转发：计划的URI。如果调用了fallback，则请求将转发到与URI匹配的控制器。
+以下示例配置了这种fallback
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: circuitbreaker_route
+        uri: lb://backing-service:8088
+        predicates:
+        - Path=/consumingServiceEndpoint
+        filters:
+        - name: CircuitBreaker
+          args:
+            name: myCircuitBreaker
+            fallbackUri: forward:/inCaseOfFailureUseThis
+        - RewritePath=/consumingServiceEndpoint, /backingServiceEndpoint
+```
+
+用java代码实现
+
+```java
+@Bean
+public RouteLocator routes(RouteLocatorBuilder builder) {
+    return builder.routes()
+        .route("circuitbreaker_route", r -> r.path("/consumingServiceEndpoint")
+            .filters(f -> f.circuitBreaker(c -> c.name("myCircuitBreaker").fallbackUri("forward:/inCaseOfFailureUseThis"))
+                .rewritePath("/consumingServiceEndpoint", "/backingServiceEndpoint")).uri("lb://backing-service:8088")
+        .build();
+}
+```
+当调用断路器回退时，此示例转发到/ inCaseofFailureUseThis URI。
+*请注意，此示例还演示了（可选）Spring Cloud Netflix Ribbon负载平衡（由目标URI上的lb前缀定义）。*
+
+主要方案是使用fallbackUri在网关应用程序内定义内部控制器或处理程序。
+但是，您还可以将请求重新路由到外部应用程序中的控制器或处理程序，如下所示：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: ingredients
+        uri: lb://ingredients
+        predicates:
+        - Path=//ingredients/**
+        filters:
+        - name: CircuitBreaker
+          args:
+            name: fetchIngredients
+            fallbackUri: forward:/fallback
+      - id: ingredients-fallback
+        uri: http://localhost:9994
+        predicates:
+        - Path=/fallback
+```
+
+
+## 6.7. The FallbackHeaders GatewayFilter Factory
+
+FallbackHeaders允许在转发到外部应用程序中的FallbackUri的请求的header中添加Hystrix异常详细信息，如下所示：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: ingredients
+        uri: lb://ingredients
+        predicates:
+        - Path=//ingredients/**
+        filters:
+        - name: CircuitBreaker
+          args:
+            name: fetchIngredients
+            fallbackUri: forward:/fallback
+      - id: ingredients-fallback
+        uri: http://localhost:9994
+        predicates:
+        - Path=/fallback
+        filters:
+        - name: FallbackHeaders
+          args:
+            executionExceptionTypeHeaderName: Test-Header
+```
+
+在本例中，在运行HystrixCommand发生执行异常后，请求将被转发到 localhost:9994应用程序中的 fallback终端或程序。异常类型、消息（如果可用）cause exception类型和消息的头，将由FallbackHeaders filter添加到该请求中。
+
+通过设置下面列出的参数值及其默认值，可以在配置中覆盖headers的名称：
+
+- executionExceptionTypeHeaderName ("Execution-Exception-Type")
+- executionExceptionMessageHeaderName ("Execution-Exception-Message")
+- rootCauseExceptionTypeHeaderName ("Root-Cause-Exception-Type")
+- rootCauseExceptionMessageHeaderName ("Root-Cause-Exception-Message")
+
+Hystrix 如何实现的更多细节可以参考 [Hystrix GatewayFilter Factory section](https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.2.2.RELEASE/reference/html/#hystrix)或者[Spring Cloud CircuitBreaker Factory section.](https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.2.2.RELEASE/reference/html/#spring-cloud-circuitbreaker-filter-factory).
+
+## 6.8. The MapRequestHeader GatewayFilter Factory
+MapRequestHeader过滤器有fromHeader和toHeader两个参数。它创建一个新的命名头（toHeader），然后从传入的HTTP请求中将其值从现有的命名头（fromHeader）中提取出来。
+如果输入标头不存在，则过滤器不起作用。
+如果新的命名报头已经存在，则其值将使用新值进行扩充。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: map_request_header_route
+        uri: https://example.org
+        filters:
+        - MapRequestHeader=Blue, X-Request-Red
+```
+这会将X-Request-Red：<values>标头添加到下游请求中，这个值就是来自传入HTTP请求的Blue标头的值。
+
+## 6.9. The PrefixPath GatewayFilter Factory
+
+PrefixPath GatewayFilter 只有一个 prefix 参数.
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: prefixpath_route
+        uri: https://example.org
+        filters:
+        - PrefixPath=/mypath
+```
+这会将/mypath作为所有匹配请求的路径的前缀。因此，对/hello的请求将发送到/mypath/hello。
+
+## 6.10. The PreserveHostHeader GatewayFilter Factory
+
+该filter没有参数。设置了该Filter后，当客户端通过Gateway访问服务时，服务中获取到Host头。如果经过此过滤器，则服务端获取到的是客户端请求网关的Host；如果未经过此过滤器，则服务端获取到的是网关请求服务端的Host。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: preserve_host_route
+        uri: https://example.org
+        filters:
+        - PreserveHostHeader
+```
+
+## 6.11. The RequestRateLimiter GatewayFilter Factory
+
+RequestRateLimiter使用RateLimiter实现是否允许继续执行当前请求。如果不允许继续执行，则返回HTTP 429 - Too Many Requests （默认情况下）。
+
+这个过滤器可以配置一个可选的keyResolver 参数和rate limiter参数（见下文）。
+
+keyResolver 是 KeyResolver 接口的实现类.在配置中，按名称使用SpEL引用bean。#{@myKeyResolver} 是引用名为'myKeyResolver'的bean的SpEL表达式。以下代码显示了KeyResolver接口
+
+```java
+public interface KeyResolver {
+    Mono<String> resolve(ServerWebExchange exchange);
+}
+```
+
+KeyResolver接口允许使用可插拔策略来派生限制请求的key。在未来的里程碑版本中，将有一些KeyResolver实现。
+
+KeyResolver的默认实现是PrincipalNameKeyResolver，它从ServerWebExchange检索Principal并调用Principal.getName()。
+
+默认情况下，如果KeyResolver 没有获取到key，请求将被拒绝。此行为可以使用 spring.cloud.gateway.filter.request-rate-limiter.deny-empty-key (true or false) 和 spring.cloud.gateway.filter.request-rate-limiter.empty-key-status-code属性进行调整。
+
+*该过滤器不能使用快捷表示法，例如*
+```yaml
+spring.cloud.gateway.routes[0].filters[0]=RequestRateLimiter=2, 2, #{@userkeyresolver}
+```
+
+### 6.11.1 Redis RateLimiter
+
+redis实现基于[Stripe](https://stripe.com/blog/rate-limiters)完成的工作。 它需要使用spring-boot-starter-data-redis-active。
+
+算法使用的是令牌桶算法[Token Bucket Algorithm](https://en.wikipedia.org/wiki/Token_bucket).
+
+redis-rate-limiter.replenishRate是您希望允许用户每秒执行多少请求，而不会丢弃任何请求。 这是令牌桶填充的速率。
+
+redis-rate-limiter.burstCapacity是用户在一秒钟内允许执行的最大请求数。 这是令牌桶可以容纳的令牌数。 将此值设置为零将阻止所有请求。
+
+redis-rate-limiter.requestedTokens属性是一个请求要花费多少个令牌。这是每个请求从存储桶中获取的令牌数，默认为1。
+
+通过在replenishRate和burstCapacity中设置相同的值来实现稳定的速率。通过将burstCapacity设置为高于replenishRate，可以允许临时突发流量。在这种情况下，需要在两次突发之间允许速率限制器留出一段时间（根据replenishRate），因为连续2次突发将导致请求被丢弃（HTTP 429 - Too Many Requests）。
+
+通过将replenishRate设置为所需的请求数，将requestTokens设置为以秒为单位的时间跨度并将burstCapacity设置为replenishRate和requestedToken的乘积，例如1，可以达到以下1个请求的速率限制。
+设置replenishRate = 1，requestedTokens = 60和burstCapacity = 60将导致限制为每分钟1个请求。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: requestratelimiter_route
+        uri: https://example.org
+        filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 10
+            redis-rate-limiter.burstCapacity: 20
+            redis-rate-limiter.requestedTokens: 1
+```
+
+以下示例在Java中配置KeyResolver：
+
+```java
+@Bean
+KeyResolver userKeyResolver() {
+    return exchange -> Mono.just(exchange.getRequest().getQueryParams().getFirst("user"));
+}
+```
+
+这定义了每个用户10的请求速率限制。
+允许突发20，但是在下一秒中，只有10个请求可用。
+这个userKeyResolver是获取user请求参数的简单方法（请注意，不建议在生产环境中使用此参数）。
+
+您还可以将速率限制器定义为实现RateLimiter接口的Bean。在配置中，可以使用SpEL按名称引用Bean。
+＃{@ myRateLimiter}是一个SpEL表达式，它引用名为myRateLimiter的bean。
+
+以下清单定义了一个速率限制器，该限制器使用前面清单中定义的KeyResolver：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: requestratelimiter_route
+        uri: https://example.org
+        filters:
+        - name: RequestRateLimiter
+          args:
+            rate-limiter: "#{@myRateLimiter}"
+            key-resolver: "#{@userKeyResolver}"
+```
+
+## 6.12. The RedirectTo GatewayFilter Factory
+
+RedirectTo GatewayFilter Factory 包含status 参数和url参数。 状态参数必须是300系列的重定向http状态码，例如301。地址必须有效，这是Location标头的值。
+对于相对重定向，您应该使用uri：no：// op作为路由定义的uri。
+下面的清单配置一个RedirectTo
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: prefixpath_route
+        uri: https://example.org
+        filters:
+        - RedirectTo=302, https://acme.org
+```
+这将发送带有Location：https：//acme.org标头的状态302以执行重定向。
+
+## 6.13. The RemoveRequestHeader GatewayFilter Factory
+
+
+
+## 6.14. RemoveResponseHeader GatewayFilter Factory
+## 6.15. The RemoveRequestParameter GatewayFilter Factory
+## 6.16. The RewritePath GatewayFilter Factory
+## 6.17. RewriteLocationResponseHeader GatewayFilter Factory
+## 6.18. The RewriteResponseHeader GatewayFilter Factory
+## 6.19. The SaveSession GatewayFilter Factory
+## 6.20. The SecureHeaders GatewayFilter Factory
+## 6.21. The SetPath GatewayFilter Factory
+## 6.22. The SetRequestHeader GatewayFilter Factory
+## 6.23. The SetResponseHeader GatewayFilter Factory
+## 6.24. The SetStatus GatewayFilter Factory
+## 6.25. The StripPrefix GatewayFilter Factory
+## 6.26. The Retry GatewayFilter Factory
+## 6.27. The RequestSize GatewayFilter Factory
+## 6.28. Modify a Request Body GatewayFilter Factory
+## 6.29. Modify a Response Body GatewayFilter Factory
+## 6.30. Default Filters
 
 
 # 7. 全局过滤器
