@@ -1,14 +1,14 @@
 ---
 banner: http://icepear.oss-cn-shenzhen.aliyuncs.com/springboot/1/spring.jpg
 title: spring cloud gateway 2.2.2 中文文档
-date: 2020-05-12 21:30:02
+date: 2020-05-14 21:30:02
 toc: true
 tags: 
 - Spring Cloud Gateway
 categories:
 - springcloud
 ---
-本文档基于官网()[https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.2.2.RELEASE/reference/html/] 2.2.2.RELEASE版本进行翻译，中间按照自己的理解并不是全文照搬。
+本文档基于[官方文档](https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.2.2.RELEASE/reference/html/) 2.2.2.RELEASE版本进行翻译，中间按照自己的理解并不是全文照搬。
 <!--more-->
 
 # 1. 怎样引入 Spring Cloud Gateway
